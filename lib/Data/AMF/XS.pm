@@ -5,7 +5,7 @@ use base 'Exporter';
 
 our $VERSION = '0.01';
 
-our @EXPORT = 'encode_amf0';
+our @EXPORT = qw/encode_amf0 decode_amf0/;
 
 XSLoader::load __PACKAGE__, $VERSION;
 
@@ -19,8 +19,10 @@ Data::AMF::XS - Module abstract (<= 44 characters) goes here
 
 =head1 SYNOPSIS
 
-  use Data::AMF::XS;
-  blah blah blah
+    use Data::AMF::XS;
+    
+    my $amf0_data    = encode_amf0(@perl_objects);
+    my @perl_objects = decode_amf0($amf0_data);
 
 =head1 DESCRIPTION
 
