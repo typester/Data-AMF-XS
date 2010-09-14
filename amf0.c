@@ -176,6 +176,7 @@ void amf0_object_free(amf0_object_t* obj) {
     for (i = 0; i < obj->used; ++i) {
         kv = obj->data[i];
 
+        free((char*)kv->key);
         amf0_data_free(kv->value);
         free(kv);
     }
@@ -197,7 +198,6 @@ void amf0_object_add(amf0_object_t* obj, const char* key, amf0_data_t* value) {
     assert(NULL != obj->data);
 
     kv = (amf0_object_keyvalue_t*)calloc(1, sizeof(amf0_object_keyvalue_t));
-
     kv->key   = key;
     kv->value = value;
 
@@ -512,7 +512,6 @@ int amf0_decode_object(amf0_data_t** data, const char* buf, int len) {
         assert(NULL != d);
 
         amf0_object_add(obj, b, d);
-        free(b);
     }
 
     *data = (amf0_data_t*)obj;
