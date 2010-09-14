@@ -1,6 +1,3 @@
-amf0.c
-amf0.h
-byteorderutil.h
 Changes
 inc/Module/Install.pm
 inc/Module/Install/AuthorTests.pm
@@ -46,7 +43,9 @@ t/data/amf0/reference_nested
 t/data/amf0/strict_array
 t/data/amf0/string
 t/data/amf0/undefined
-xs.c
+xs/amf0.c
+xs/amf0.h
+xs/byteorderutil.h
+xs/xs.c
 xt/pod.t
-xt/pod_coverage.t
 xt/pod_spell.t

@@ -4,6 +4,7 @@ name 'Data-AMF-XS';
 all_from 'lib/Data/AMF/XS.pm';
 
 test_requires 'Test::More' => '0.94';
+test_requires 'YAML';
 use_test_base;
 author_tests('xt');
 auto_set_repository;
