@@ -201,6 +201,9 @@ XS(decode_amf0) {
     data = SvPV((SV*)ST(0), len);
 
     amf0 = amf0_decode(data, len);
+    if (NULL == amf0) {
+        Perl_croak(aTHX_ "Failed to decode AMF data.");
+    }
 
     for (i = 0; i < amf0->used; ++i) {
         sv = _amf0_sv(amf0->data[i]);

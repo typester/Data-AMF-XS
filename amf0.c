@@ -283,7 +283,10 @@ amf0_t* amf0_decode(const char* buf, int len) {
         data = NULL;
         r = amf0_decode_data(&data, buf + offset, len - offset);
 
-        if (r < 0) break;
+        if (r < 0) {
+            amf0_free(amf);
+            return NULL;
+        }
 
         offset += r;
 
