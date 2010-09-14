@@ -10,6 +10,11 @@ author_tests('xt');
 auto_include;
 auto_set_repository;
 
+cc_warnings;
 use_ppport 3.19;
+
+if ($ENV{DEBUG}) {
+    cc_append_to_ccflags '-g';
+}
 
 WriteAll;

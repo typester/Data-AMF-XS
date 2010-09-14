@@ -115,5 +115,9 @@ amf0_strictarray_t* amf0_strictarray_init();
 void amf0_strictarray_add(amf0_strictarray_t* array, amf0_data_t* data);
 void amf0_strictarray_free(amf0_strictarray_t* array);
 
+#ifndef UNUSED
+#define UNUSED(x) ( (void)(x) )
+#endif
+
 #endif
 

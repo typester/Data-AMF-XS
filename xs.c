@@ -4,6 +4,9 @@
 #include "ppport.h"
 #include "amf0.h"
 
+/* prototype */
+int amf0_encode(amf0_t* amf, char* buf);
+
 static amf0_data_t* _amf0_data_rv(SV* sv);
 
 static amf0_data_t* _amf0_data(SV* sv) {
@@ -39,18 +42,24 @@ static amf0_data_t* _amf0_data(SV* sv) {
 
 static amf0_data_t* _amf0_data_rv(SV* sv) {
     svtype svt = SvTYPE(sv);
-
-    amf0_data_t* d = NULL;;
+    int i, len, count;
+    amf0_data_t* d;
+    SV** svp;
+    SV* k;
+    AV* ary;
+    HV* hval;
+    HE* he;
+    STRLEN strlen;
+    char* key;
 
     if (SVt_PVAV == svt) {
         d = (amf0_data_t*)amf0_strictarray_init();
 
-        AV* ary = (AV*)sv;
-        int len = av_len(ary) + 1;
+        ary = (AV*)sv;
+        len = av_len(ary) + 1;
 
-        int i;
         for (i = 0; i < len; ++i) {
-            SV** svp = av_fetch(ary, i, 0);
+            svp = av_fetch(ary, i, 0);
             if (svp) {
                 amf0_strictarray_add((amf0_strictarray_t*)d, _amf0_data(*svp));
             }
@@ -62,14 +71,12 @@ static amf0_data_t* _amf0_data_rv(SV* sv) {
     else if (SVt_PVHV == svt) {
         d = (amf0_data_t*)amf0_object_init();
 
-        HV* hval  = (HV*)sv;
-        int count = hv_iterinit(hval);
-        HE* he;
+        hval  = (HV*)sv;
+        count = hv_iterinit(hval);
 
-        while (he = hv_iternext(hval)) {
-            SV* k = hv_iterkeysv(he);
-            STRLEN len;
-            char*  key = SvPV(k, len);
+        while ( (he = hv_iternext(hval)) ) {
+            k = hv_iterkeysv(he);
+            key = SvPV(k, strlen);
 
             amf0_object_add((amf0_object_t*)d, key, _amf0_data(HeVAL(he)));
         }
@@ -84,24 +91,29 @@ static amf0_data_t* _amf0_data_rv(SV* sv) {
 XS(encode_amf0) {
     dXSARGS;
 
+    amf0_t* amf0;
+    amf0_data_t* d;
+    int i, r, len;
+    char* b;
+    SV* ret;
+
     if (items < 1) {
         Perl_croak(aTHX_ "Usage: encode_amf0(@objs)");
     }
 
-    amf0_t* amf0 = amf0_init();
+    amf0 = amf0_init();
 
-    int i = 0;
     for (i = 0; i < items; ++i) {
-        amf0_data_t* d = _amf0_data((SV*)ST(i));
+        d = _amf0_data((SV*)ST(i));
         if (NULL != d) amf0_append(amf0, d);
     }
 
-    int len = amf0_encode(amf0, NULL);
-    char* b = calloc(1, len);
+    len = amf0_encode(amf0, NULL);
+    b = (char*)calloc(1, len);
 
-    int r = amf0_encode(amf0, b);
+    r = amf0_encode(amf0, b);
 
-    SV* ret = (SV*)0;
+    ret = (SV*)0;
     if (r >= 0) {
         ret = sv_2mortal(newSVpvn(b, len));
     }
@@ -114,6 +126,14 @@ XS(encode_amf0) {
 
 static SV* _amf0_sv(amf0_data_t* data) {
     SV* sv = NULL;
+    SV* svh;
+    SV* sva;
+    HV* hv;
+    AV* av;
+    int i;
+    amf0_object_t* obj;
+    const char* key;
+    amf0_data_t* value;
 
     switch (data->type) {
         case AMF0_NUMBER:
@@ -126,29 +146,30 @@ static SV* _amf0_sv(amf0_data_t* data) {
             sv = newSV(0);
             sv_setpv(sv, ((amf0_string_t*)data)->value);
             break;
-        case AMF0_OBJECT: {
-            HV* hv = newHV();
+        case AMF0_OBJECT:
+            hv = newHV();
+            obj = (amf0_object_t*)data;
 
-            int i;
-            for (i = 0; i < ((amf0_object_t*)data)->used; ++i) {
-                SV* svh = _amf0_sv(((amf0_object_t*)data)->data[i]->value);
-                hv_store(hv, ((amf0_object_t*)data)->data[i]->key, 0, svh, 0);
+            for (i = 0; i < obj->used; ++i) {
+                key   = obj->data[i]->key;
+                value = obj->data[i]->value;
+
+                svh = _amf0_sv(value);
+                hv_store(hv, key, strlen(key), svh, 0);
             }
 
             sv = newRV(sv_2mortal((SV*)hv));
 
             break;
-        }
         case AMF0_NULL:
         case AMF0_UNDEFINED:
             sv = newSV(0);
             break;
         case AMF0_STRICTARRAY: {
-            AV* av = newAV();
+            av = newAV();
 
-            int i;
             for (i = 0; i < ((amf0_strictarray_t*)data)->used; ++i) {
-                SV* sva = _amf0_sv(((amf0_strictarray_t*)data)->data[i]);
+                sva = _amf0_sv(((amf0_strictarray_t*)data)->data[i]);
                 av_push(av, sva);
             }
 
@@ -156,6 +177,18 @@ static SV* _amf0_sv(amf0_data_t* data) {
 
             break;
         }
+        case AMF0_MOVIECLIP:
+        case AMF0_REFERENCE:
+        case AMF0_ECMAARRAY:
+        case AMF0_OBJECTEND:
+        case AMF0_DATE:
+        case AMF0_LONGSTRING:
+        case AMF0_UNSUPPORTED:
+        case AMF0_RECORDSET:
+        case AMF0_XMLDOCUMENT:
+        case AMF0_TYPEDOBJECT:
+            Perl_croak(aTHX_ "Unsupported datatype: %d\n", data->type);
+            break;
     }
 
     return sv;
@@ -164,18 +197,22 @@ static SV* _amf0_sv(amf0_data_t* data) {
 XS(decode_amf0) {
     dXSARGS;
 
+    STRLEN len;
+    char*  data;
+    amf0_t* amf0;
+    int i;
+    SV* sv;
+
     if (items != 1) {
         Perl_croak(aTHX_ "Usage: decode_amf0($amf_data)");
     }
 
-    STRLEN len;
-    char*  data = SvPV((SV*)ST(0), len);
+    data = SvPV((SV*)ST(0), len);
 
-    amf0_t* amf0 = amf0_decode(data, len);
+    amf0 = amf0_decode(data, len);
 
-    int i;
     for (i = 0; i < amf0->used; ++i) {
-        SV* sv = _amf0_sv(amf0->data[i]);
+        sv = _amf0_sv(amf0->data[i]);
         ST(i) = sv_2mortal(sv);
     }
     XSRETURN(i);

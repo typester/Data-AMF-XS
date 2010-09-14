@@ -8,20 +8,6 @@
 #endif
 #endif
 
-static int little_endian() {
-    union {
-        uint16_t s;
-        struct {
-            uint8_t c0;
-            uint8_t c1;
-        } c;
-    } u;
-
-    u.s = 1;
-    if (0 == u.c.c0) return 0;
-    else return 1;
-}
-
 static void* swap_bytes(void* data, int len) {
     unsigned char* b = (unsigned char*)data;
     unsigned char  t;
