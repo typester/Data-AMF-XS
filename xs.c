@@ -135,7 +135,7 @@ static SV* _amf0_sv(amf0_data_t* data) {
                 hv_store(hv, ((amf0_object_t*)data)->data[i]->key, 0, svh, 0);
             }
 
-            sv = newRV((SV*)hv);
+            sv = newRV(sv_2mortal((SV*)hv));
 
             break;
         }
@@ -152,7 +152,7 @@ static SV* _amf0_sv(amf0_data_t* data) {
                 av_push(av, sva);
             }
 
-            sv = newRV((SV *)av);
+            sv = newRV(sv_2mortal((SV *)av));
 
             break;
         }
@@ -178,7 +178,7 @@ XS(decode_amf0) {
         SV* sv = _amf0_sv(amf0->data[i]);
         ST(i) = sv_2mortal(sv);
     }
-    XSRETURN(++i);
+    XSRETURN(i);
 
     amf0_free(amf0);
 }

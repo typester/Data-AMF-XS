@@ -457,17 +457,15 @@ int amf0_decode_object(amf0_data_t** data, const char* buf, int len) {
 
         if (len < (p + s)) return -1;
 
-        char* b = calloc(1, s);
-        memcpy(b, buf + p, s);
-        p += s;
-
-        if (b[0] == 0x00 && b[1] == 0x00) {
-            /* object end */
-            assert(buf[p++] == AMF0_OBJECTEND);
-            offset += p;
-            free(b);
+        if (0 == s && AMF0_OBJECTEND == buf[p]) {
+            offset = ++p;
             break;
         }
+
+        char* b = calloc(1, s + 1);
+        memcpy(b, buf + p, s);
+        b[s] = '\0';
+        p += s;
 
         amf0_data_t* data;
         r = amf0_decode_data(&data, buf + p, len - p);
