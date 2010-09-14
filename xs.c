@@ -165,7 +165,7 @@ static SV* _amf0_sv(amf0_data_t* data) {
         case AMF0_UNDEFINED:
             sv = newSV(0);
             break;
-        case AMF0_STRICTARRAY: {
+        case AMF0_STRICTARRAY:
             av = newAV();
 
             for (i = 0; i < ((amf0_strictarray_t*)data)->used; ++i) {
@@ -176,17 +176,7 @@ static SV* _amf0_sv(amf0_data_t* data) {
             sv = newRV(sv_2mortal((SV *)av));
 
             break;
-        }
-        case AMF0_MOVIECLIP:
-        case AMF0_REFERENCE:
-        case AMF0_ECMAARRAY:
-        case AMF0_OBJECTEND:
-        case AMF0_DATE:
-        case AMF0_LONGSTRING:
-        case AMF0_UNSUPPORTED:
-        case AMF0_RECORDSET:
-        case AMF0_XMLDOCUMENT:
-        case AMF0_TYPEDOBJECT:
+        default:
             Perl_croak(aTHX_ "Unsupported datatype: %d\n", data->type);
             break;
     }
