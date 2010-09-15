@@ -3,7 +3,7 @@ use strict;
 use XSLoader;
 use base 'Exporter';
 
-our $VERSION = '0.01_01';
+our $VERSION = '0.01_02';
 
 our @EXPORT = qw/encode_amf0 decode_amf0/;
 
@@ -36,9 +36,9 @@ This module is *ALPHA* release and has several limitations at this time.
 
 =over 4
 
-=item Support only AMF0 (and limited type)
+=item * Support only AMF0 (and limited type)
 
-=item No AMF RPC Packet support (only AMF data)
+=item * No AMF RPC Packet support (only AMF data)
 
 =back
 
