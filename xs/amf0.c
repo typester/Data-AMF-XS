@@ -151,7 +151,7 @@ amf0_string_t* amf0_string_init(const char* buf) {
 amf0_string_t* amf0_string_init_len(const char* buf, int len) {
     amf0_string_t* string = (amf0_string_t*)calloc(1, sizeof(amf0_string_t));
     string->type  = AMF0_STRING;
-    string->value = (char*)calloc(1, len);
+    string->value = (char*)calloc(1, len + 1);
     memcpy(string->value, buf, len);
 
     return string;

@@ -20,7 +20,7 @@ static amf0_data_t* _amf0_data(SV* sv) {
         STRLEN len;
         char*  c = SvPV(sv, len);
 
-        d = (amf0_data_t*)amf0_string_init(c);
+        d = (amf0_data_t*)amf0_string_init_len(c, len);
     }
     else if (SvNOKp(sv)) {
         d = (amf0_data_t*)amf0_number_init((double)SvNVX(sv));
