@@ -48,7 +48,7 @@ typedef struct {
 } amf0_string_t;
 
 typedef struct {
-    const char* key;
+    char* key;
     amf0_data_t* value;
 } amf0_object_keyvalue_t;
 

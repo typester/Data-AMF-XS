@@ -176,7 +176,7 @@ void amf0_object_free(amf0_object_t* obj) {
     for (i = 0; i < obj->used; ++i) {
         kv = obj->data[i];
 
-        free((char*)kv->key);
+        free(kv->key);
         amf0_data_free(kv->value);
         free(kv);
     }
@@ -200,7 +200,7 @@ void amf0_object_add(amf0_object_t* obj, const char* key, amf0_data_t* value) {
 
     kv = (amf0_object_keyvalue_t*)calloc(1, sizeof(amf0_object_keyvalue_t));
 
-    kv->key = calloc(1, len + 1);
+    kv->key = (char*)calloc(1, len + 1);
     strcpy(kv->key, key);
 
     kv->value = value;
