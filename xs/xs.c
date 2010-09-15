@@ -20,7 +20,7 @@ static amf0_data_t* _amf0_data(SV* sv) {
         STRLEN len;
         char*  c = SvPV(sv, len);
 
-        d = (amf0_data_t*)amf0_string_init_len(c, len);
+        d = (amf0_data_t*)amf0_string_init(c);
     }
     else if (SvNOKp(sv)) {
         d = (amf0_data_t*)amf0_number_init((double)SvNVX(sv));
@@ -118,11 +118,12 @@ XS(encode_amf0) {
     if (r >= 0) {
         ret = sv_2mortal(newSVpvn(b, len));
     }
+
+    amf0_free(amf0);
+    free(b);
+
     ST(0) = ret;
     XSRETURN(1);
-
-    free(b);
-    amf0_free(amf0);
 }
 
 static SV* _amf0_sv(amf0_data_t* data) {
@@ -209,9 +210,10 @@ XS(decode_amf0) {
         sv = _amf0_sv(amf0->data[i]);
         ST(i) = sv_2mortal(sv);
     }
-    XSRETURN(i);
 
     amf0_free(amf0);
+
+    XSRETURN(i);
 }
 
 XS(boot_Data__AMF__XS) {
